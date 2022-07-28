@@ -1,61 +1,42 @@
 /**********************************************/
 /*Module Name: CAN Driver                        */
-/*Author: Ahmed Essam / Ahmed Hatem    */
-/*Purpose: Reads messages over CAN bus and the CAN interrupt status. */
+/*Author: Mahmoud Ayman / Nader Ahmed  */
+/*Purpose: Sends messages over CAN bus and reads the CAN interrupt status. */
 /**********************************************/
 
 #include "can.h"
 
-uint8 SW1State = SW_LOW;
-uint8 BothSWState = SW_LOW;
-
 /***************************************************************/
-/*Function Name : CAN_Read                                             */
-/*Inputs               : None                                                    */
-/*Outputs            : None                                                    */
-/*Reentrancy        : Reentrant                                             */
-/*Synchronous     : Synch                                                   */
-/*Description       : Reads if a CAN message is sent on CanDrv for receive. */
+/*Function Name : CAN_Write                                             */
+/*Inputs               : Switch1_Status (Value of DIO Channel 0), Switch2_Status (Value of DIO Channel 1)   */
+/*Outputs            : None                                                     */
+/*Reentrancy        : Reentrant                                              */
+/*Synchronous     : Synch                                                    */
+/*Description       : Passes a CAN message to CanDrv for transmission depending on input switches' state. */
  /***************************************************************/
-void CAN_Read (void)
+void CAN_Write (uint32 Switch1_Status, uint32 Switch2_Status)
 {
-        if(g_M1RXFlag)
-            {
-
-                /*
-                 Reuse the same message object that was used earlier to configure
-                 the CAN for receiving messages.  A buffer for storing the
-                 received data must also be provided, so set the buffer pointer
-                 within the message object.
-                */
-                sCANMessageRX.pui8MsgData = pui8MsgDataRX;
-
-                /*
-                 Read the message from the CAN.  Message object number 1 is used
-                 (which is not the same thing as CAN ID).  The interrupt clearing
-                 flag is not set because this interrupt was already cleared in
-                 the interrupt handler.
-                */
-                CANMessageGet(CANChannel, Msg1RX_Object, &sCANMessageRX, 0);      //Tiva2 receive from Tiva1
-
-                SW1State = pui8MsgDataRX[0];
-
-                /*  Clear the pending message flag so that the interrupt handler can set it again when the next message arrives. */
-                g_M1RXFlag = 0;
-            }
-            else if(g_M2RXFlag)
-            {
-
-                sCANMessageRX.pui8MsgData = pui8MsgDataRX;
-                CANMessageGet(CANChannel, Msg2RX_Object, &sCANMessageRX, 0);      //Tiva2 receive from Tiva1
-
-                BothSWState = pui8MsgDataRX[0];
-
-                /*  Clear the pending message flag so that the interrupt handler can set it again when the next message arrives. */
-                g_M2RXFlag = 0;
-            }
+    if (Switch1_Status == STD_HIGH && Switch2_Status == STD_HIGH) {
+        BothSwData[0] = Switch1_Status | Switch2_Status;
+        CANMessageSet(CANChannel, Msg3TX_Object, &sCANMessage3, MSG_OBJ_TYPE_TX);             /* from ECU1 to both ECUs */
+    }
+    else if (Switch2_Status == STD_HIGH) {
+        Sw2Data[0] = Switch2_Status;
+        CANMessageSet(CANChannel, Msg2TX_Object, &sCANMessage2, MSG_OBJ_TYPE_TX);             /* from ECU1 to ECU3 */
+    }
+    else if (Switch1_Status == STD_HIGH) {
+        Sw1Data[0] = Switch1_Status;
+        CANMessageSet(CANChannel, Msg1TX_Object, &sCANMessage1, MSG_OBJ_TYPE_TX);             /* from ECU1 to ECU2 */
+    }
+    else {
+            Sw1Data[0] = STD_LOW;
+            CANMessageSet(CANChannel, Msg1TX_Object, &sCANMessage1, MSG_OBJ_TYPE_TX);             /* from ECU1 to ECU2 */
+            Sw2Data[0] = STD_LOW;
+            CANMessageSet(CANChannel, Msg2TX_Object, &sCANMessage2, MSG_OBJ_TYPE_TX);             /* from ECU1 to ECU3 */
+            BothSwData[0] =STD_LOW;
+            CANMessageSet(CANChannel, Msg3TX_Object, &sCANMessage3, MSG_OBJ_TYPE_TX);             /* from ECU1 to both ECUs */
+    }
 }
-
 
 
 
@@ -63,12 +44,6 @@ void CAN_Read (void)
  A flag to indicate that some transmission error occurred.
 ******************************************************************************/
 volatile bool g_bErrFlag=0;
-
-/******************************************************************************
- A flag for the interrupt handler to indicate that a message was received.
-******************************************************************************/
-volatile bool g_M1RXFlag=0;
-volatile bool g_M2RXFlag=0;
 
 /***************************************************************/
 /*Function Name : CANIntHandler                                   */
@@ -104,39 +79,56 @@ void CANIntHandler(void)
         g_bErrFlag = 1;
     }
 
-    //
-    // Check if the cause is message object 1, which what we are using for
-    // sending messages.
-    //
-    else if(ui32Status == Msg1RX_Object)
+    else if(ui32Status == Msg1TX_Object )
     {
         /*
          Getting to this point means that the TX interrupt occurred on
          message object TXOBJECT, and the message reception is complete.
          Clear the message object interrupt.
         */
-        CANIntClear(CANChannel, Msg1RX_Object);
+        CANIntClear(CANChannel, Msg1TX_Object);
 
-
-        /*  Set flag to indicate received message is pending.  */
-        g_M1RXFlag = 1;
-        /*  Since the message was sent, clear any error flags. */
-        g_bErrFlag = 0;
+        /*
+         Since a message was transmitted, clear any error flags.
+         This is done because before the message is transmitted it triggers
+         a Status Interrupt for TX complete. by clearing the flag here we
+         prevent unnecessary error handling from happeneing
+        */
+        g_bErrFlag  = 0;
     }
-    else if(ui32Status == Msg2RX_Object)
+    else if(ui32Status == Msg2TX_Object)
     {
         /*
          Getting to this point means that the TX interrupt occurred on
          message object TXOBJECT, and the message reception is complete.
          Clear the message object interrupt.
         */
-        CANIntClear(CANChannel, Msg2RX_Object);
+        CANIntClear(CANChannel, Msg2TX_Object);
 
+        /*
+         Since a message was transmitted, clear any error flags.
+         This is done because before the message is transmitted it triggers
+         a Status Interrupt for TX complete. by clearing the flag here we
+         prevent unnecessary error handling from happeneing
+        */
+        g_bErrFlag  = 0;
+    }
+    else if(ui32Status == Msg3TX_Object)
+    {
+        /*
+         Getting to this point means that the TX interrupt occurred on
+         message object TXOBJECT, and the message reception is complete.
+         Clear the message object interrupt.
+        */
+        CANIntClear(CANChannel, Msg3TX_Object);
 
-        /*  Set flag to indicate received message is pending.  */
-        g_M2RXFlag = 1;
-        /*  Since the message was sent, clear any error flags. */
-        g_bErrFlag = 0;
+        /*
+         Since a message was transmitted, clear any error flags.
+         This is done because before the message is transmitted it triggers
+         a Status Interrupt for TX complete. by clearing the flag here we
+         prevent unnecessary error handling from happening
+        */
+        g_bErrFlag  = 0;
     }
 
     /*
@@ -150,3 +142,6 @@ void CANIntHandler(void)
         */
     }
 }
+
+
+

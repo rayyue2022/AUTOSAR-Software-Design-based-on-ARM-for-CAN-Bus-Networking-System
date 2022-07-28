@@ -1,6 +1,6 @@
 /**********************************************/
 /*Module Name: CAN Driver                        */
-/*Author: Ahmed Essam / Ahmed Hatem    */
+/*Author: Mahmoud Ayman / Nader Ahmed  */
 /*Purpose: Initializes and configures the required sets of the CAN module.  */
 /**********************************************/
 
@@ -9,10 +9,12 @@
 
 #include <Port_Lbcfg.h>
 #include "can.h"
+#include "Dio_Lbcfg.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <Typedefs.h>
 #include "inc/hw_can.h"
+#include "inc/hw_ints.h"
 #include "inc/hw_memmap.h"
 #include "driverlib/can.h"
 #include "driverlib/gpio.h"
@@ -21,21 +23,24 @@
 #include "driverlib/sysctl.h"
 #include "inc/hw_types.h"
 #include "inc/hw_gpio.h"
-#include "tm4c123gh6pm.h"
-
-extern volatile bool g_M1RXFlag;
-extern volatile bool g_M2RXFlag;
-
-extern tCANMsgObject sCANMessageRX;
-extern uint8 pui8MsgDataRX[8];
 
 
-#define MsgIDMask 0xfffff
+extern tCANMsgObject sCANMessage1;
+extern uint8 Sw1Data[8];
+extern tCANMsgObject sCANMessage2;
+extern uint8 Sw2Data[8];
+extern tCANMsgObject sCANMessage3;
+extern uint8 BothSwData[8];
+
+
+#define Msg1TX_Object 1
+#define Msg2TX_Object 2
+#define Msg3TX_Object 3
+
+#define MsgIDMask 0
 #define Msg1_ID 0x1001
-#define Msg2_ID 0x3001
-
-#define Msg1RX_Object 1
-#define Msg2RX_Object 2
+#define Msg2_ID 0x2001
+#define Msg3_ID 0x3001
 
 
 #define CAN_GPIOPort PortB
@@ -44,10 +49,6 @@ extern uint8 pui8MsgDataRX[8];
 
 #define CANChannel CAN0_BASE
 #define CANChannel_Interrupt INT_CAN0
-
-
-#define SW_HIGH 0x00
-#define SW_LOW 0x01
 
 extern void CAN_Init(void);
 

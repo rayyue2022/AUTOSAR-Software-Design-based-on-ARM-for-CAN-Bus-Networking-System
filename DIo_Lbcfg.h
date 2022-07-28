@@ -1,19 +1,20 @@
 /**********************************************/
 /*Module Name: DIO Driver                         */
-/*Author: Mostafa Khaled / Ahmed Essam  */
-/*Purpose: Initializes the ports and pins required to configure the DIO output LEDs.      */
+/*Author: Mahmoud Ayman / Nader Ahmed  */
+/*Purpose: Initializes the ports and pins required to configure the DIO input switches.     */
 /**********************************************/
 
 #ifndef DIO_LBCFG_H_
 #define DIO_LBCFG_H_
 
-#include <Port_Lbcfg.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <Typedefs.h>
+#include <Port_Lbcfg.h>
 #include "inc/hw_memmap.h"
 #include "driverlib/gpio.h"
 #include "driverlib/interrupt.h"
+#include "inc/hw_ints.h"
 #include "driverlib/pin_map.h"
 #include "driverlib/sysctl.h"
 #include "driverlib/rom_map.h"
@@ -21,13 +22,13 @@
 #include "inc/hw_gpio.h"
 
 
-#define GPIO_Port GPIO_PORTF_BASE
-#define Channel_0 GPIO_PIN_1    /* Pin 1 represents Red LED on Port F */
-#define Channel_1 GPIO_PIN_2    /* Pin 2 represents Blue LED on Port F */
-#define Channel_2 GPIO_PIN_3    /* Pin 3 represents Green LED on Port F */
+#define GPIO_Port PortF
+#define Channel_0 Pin_0   /* Pin 0 represents SW2 on Port F */
+#define Channel_1 Pin_4    /* Pin 4 represents SW1 on Port F */
+#define GPIOPort_Interrupt INT_GPIOF
 
-#define STD_HIGH 0x01
-#define STD_LOW 0x00
+#define STD_HIGH 0x00
+#define STD_LOW 0x01
 
 extern void DioChannel_Init (void);
 

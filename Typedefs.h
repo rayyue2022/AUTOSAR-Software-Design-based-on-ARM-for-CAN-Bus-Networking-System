@@ -1,6 +1,6 @@
 /**********************************************/
 /*Module Name: Type Definitions               */
-/*Author:                                                        */
+/*Author:   Ahmed Essam, Mahmoud Ayman                     */
 /*Purpose: Type definitions of data types.  */
 /**********************************************/
 

@@ -1,14 +1,19 @@
 /**********************************************/
 /*Module Name: CAN Driver                        */
-/*Author: Ahmed Essam / Ahmed Hatem    */
+/*Author: Mahmoud Ayman / Nader Ahmed   */
 /*Purpose: Initializes and configures the required sets of the CAN module.  */
 /**********************************************/
 
+#include <CAN_Lbcfg.h>
 
-#include "CAN_Lbcfg.h"
+tCANMsgObject sCANMessage1;
+uint8 Sw1Data[8];
 
-tCANMsgObject sCANMessageRX;
-uint8 pui8MsgDataRX[8];
+tCANMsgObject sCANMessage2;
+uint8 Sw2Data[8];
+
+tCANMsgObject sCANMessage3;
+uint8 BothSwData[8];
 
 
 /***************************************************************/
@@ -21,7 +26,6 @@ uint8 pui8MsgDataRX[8];
  /***************************************************************/
 void CAN_Init(void)
 {
-
     Port_ConfigType PORT_CANRX = { CAN, CAN_GPIOPort, GPIO_RXPin };
     Port_ConfigType PORT_CANTX = { CAN, CAN_GPIOPort, GPIO_TXPin };
     Port_Init(&PORT_CANRX);
@@ -43,35 +47,44 @@ void CAN_Init(void)
 
 
     /*
-     Initialize a message object to be used for receiving CAN messages with
-     any CAN ID.  In order to receive any CAN ID, the ID and mask must both
-     be set to 0, and the ID filter enabled.
+     Initialize the message object that will be used for sending CAN
+     messages.  The message will be 4 bytes that will contain an incrementing
+     value.  Initially it will be set to 0.
     */
-    /*
-     Initialize a message object to receive CAN messages with ID 0x1001.
-     The expected ID must be set along with the mask to indicate that all
-     bits in the ID must match.
-    */
-    sCANMessageRX.ui32MsgID = Msg1_ID;
-    sCANMessageRX.ui32MsgIDMask = MsgIDMask;
-    sCANMessageRX.ui32Flags = MSG_OBJ_RX_INT_ENABLE | MSG_OBJ_USE_ID_FILTER;
-    sCANMessageRX.ui32MsgLen = 8;
 
     /*
-     Now load the message object into the CAN peripheral message object 1.
-     Once loaded the CAN will receive any messages with this CAN ID into
-     this message object, and an interrupt will occur.
+     Initialize message object 1 to be able to send CAN message 1.  This
+     message object is not shared so it only needs to be initialized one
+     time, and can be used for repeatedly sending the same message ID.
     */
-    CANMessageSet(CANChannel, Msg1RX_Object, &sCANMessageRX, MSG_OBJ_TYPE_RX);
-
+    /*  MSG OBJECT 1    */
+    sCANMessage1.ui32MsgID = Msg1_ID;
+    sCANMessage1.ui32MsgIDMask = MsgIDMask;
+    sCANMessage1.ui32Flags = MSG_OBJ_TX_INT_ENABLE;
+    sCANMessage1.ui32MsgLen = sizeof(Sw1Data);
+    sCANMessage1.pui8MsgData = Sw1Data;
     /*
-     Change the ID to 0x2001, and load into message object 2 which will be
-     used for receiving any CAN messages with this ID.  Since only the CAN
-     ID field changes, we don't need to reload all the other fields.
+     Initialize message object 2 to be able to send CAN message 2.  This
+     message object is not shared so it only needs to be initialized one
+     time, and can be used for repeatedly sending the same message ID.
     */
-    sCANMessageRX.ui32MsgID = Msg2_ID;
-    CANMessageSet(CANChannel, Msg2RX_Object, &sCANMessageRX, MSG_OBJ_TYPE_RX);
+    /*  MSG OBJECT 2    */
+    sCANMessage2.ui32MsgID = Msg2_ID;
+    sCANMessage2.ui32MsgIDMask = MsgIDMask;
+    sCANMessage2.ui32Flags = MSG_OBJ_TX_INT_ENABLE;
+    sCANMessage2.ui32MsgLen = sizeof(Sw2Data);
+    sCANMessage2.pui8MsgData = Sw2Data;
+    /*
+     Initialize message object 2 to be able to send CAN message 3.  This
+     message object is not shared so it only needs to be initialized one
+     time, and can be used for repeatedly sending the same message ID.
+    */
+    /*  MSG OBJECT 3    */
+    sCANMessage3.ui32MsgID = Msg3_ID;
+    sCANMessage3.ui32MsgIDMask = MsgIDMask;
+    sCANMessage3.ui32Flags = MSG_OBJ_TX_INT_ENABLE;
+    sCANMessage3.ui32MsgLen = sizeof(BothSwData);
+    sCANMessage3.pui8MsgData = BothSwData;
 
 }
-
 

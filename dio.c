@@ -1,43 +1,36 @@
 /**********************************************/
-/*Module Name: DIO_LEDs Driver                */
-/*Author: Mostafa Khaled / Ahmed Essam  */
-/*Purpose: Blink the output LEDs.                */
+/*Module Name: DIO_Switches Driver         */
+/*Author: Mahmoud Ayman / Nader Ahmed  */
+/*Purpose: Read the input switches' state.   */
 /**********************************************/
 
 #include "dio.h"
 
 /***************************************************************/
-/*Function Name : Dio_WriteChannel                                     */
-/*Inputs                : ChannelId (ID of DIO channel), Level (Value to be written)  */
-/*Outputs            : None                                                          */
-/*Reentrancy        : Reentrant                                                  */
-/*Synchronous     : Synch                                                        */
-/*Description       : Service to set a level of a channel.         */
-/***************************************************************/
-void Dio_WriteChannel ( Dio_ChannelType ChannelId, Dio_LevelType Level )
+/*Function Name : Dio_ReadChannel                                  */
+/*Inputs               : ChannelId (ID of DIO channel)              */
+/*Outputs            : None                                                    */
+/*Return Value     : Dio_LevelType (STD_HIGH: The physical level of the corresponding Pin is STD_HIGH,
+                                                    STD_LOW: The physical level of the corresponding Pin is STD_LOW)    */
+/*Reentrancy        : Reentrant                                             */
+/*Synchronous     : Synch                                                   */
+/*Description       : Returns the value of the specified DIO channel.   */
+ /***************************************************************/
+Dio_LevelType Dio_ReadChannel ( Dio_ChannelType ChannelId )
 {
-    if (ChannelId == 0 && Level == STD_HIGH)
+    uint32 SW1_Status;
+    uint32 SW2_Status;
+    if (ChannelId == 0)
     {
-        GPIOPinWrite(GPIO_Port, Channel_0, Channel_0);      /* Writes a value to the specified pin or channel  */
+        SW2_Status = GPIOPinRead(GPIO_Port,Channel_0);
+         return SW2_Status;
     }
-    else if (ChannelId == 1 && Level == STD_HIGH)
+    else if (ChannelId == 1)
     {
-        GPIOPinWrite(GPIO_Port, Channel_1, Channel_1);       /* Writes a value to the specified pin or channel  */
+        SW1_Status = GPIOPinRead(GPIO_Port,Channel_1);
+        return SW1_Status;
     }
-    else if (ChannelId == 2 &&  Level == STD_HIGH)
-    {
-        GPIOPinWrite(GPIO_Port, Channel_2, Channel_2);       /* Writes a value to the specified pin or channel  */
-    }
-    else if ( ChannelId == 0 && Level == STD_LOW)
-    {
-        GPIOPinWrite(GPIO_Port, Channel_0, STD_LOW);        /* Writes zero value to the specified pin or channel  */
-    }
-    else if ( ChannelId == 1 && Level == STD_LOW)
-    {
-        GPIOPinWrite(GPIO_Port, Channel_1, STD_LOW);        /* Writes zero value to the specified pin or channel  */
-    }
-    else if ( ChannelId == 2 && Level == STD_LOW)
-    {
-        GPIOPinWrite(GPIO_Port, Channel_2, STD_LOW);        /* Writes zero value to the specified pin or channel  */
-    }
+
+    return SW1_Status | SW2_Status;
 }
+

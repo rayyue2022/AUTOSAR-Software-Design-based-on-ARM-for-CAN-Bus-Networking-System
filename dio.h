@@ -1,15 +1,15 @@
 /**********************************************/
-/*Module Name: DIO_LEDs Driver                */
-/*Author: Mostafa Khaled / Ahmed Essam  */
-/*Purpose: Blink the output LEDs.                */
+/*Module Name: DIO_Switches Driver         */
+/*Author: Mahmoud Ayman / Nader Ahmed  */
+/*Purpose: Read the input switches' state.   */
 /**********************************************/
-
 
 #ifndef DIO_H_
 #define DIO_H_
 
+#include <Typedefs.h>
 #include "Dio_Lbcfg.h"
 
-extern void Dio_WriteChannel ( Dio_ChannelType ChannelId, Dio_LevelType Level );
+extern Dio_LevelType Dio_ReadChannel ( Dio_ChannelType ChannelId );
 
 #endif

@@ -1,11 +1,11 @@
 /**********************************************/
-/*Module Name: SysTick Driver                    */
+/*Module Name: Read-Transport Protocol Software Component   */
 /*Author: Mostafa Khaled                             */
-/*Purpose: Initializes the SysTick timer and provides a periodic interrupt to send CAN messages.  */
+/*Purpose: Reads the switches' states and provides a periodic interrupt to send CAN messages.        */
 /**********************************************/
 
-#ifndef SYSTICK_H_
-#define SYSTICK_H_
+#ifndef RTP_H_
+#define RTP_H_
 
 #include "dio.h"
 #include "can.h"
@@ -24,6 +24,12 @@
 #include "inc/hw_ints.h"
 #include "driverlib/rom_map.h"
 
-extern void Systick_Init (void);
 
-#endif /* SYSTICK_H_ */
+
+#define Switch2 0
+#define Switch1 1
+
+extern void App_RP_Init (void);
+extern void App_RP(void);
+
+#endif /* RTP_H_ */
